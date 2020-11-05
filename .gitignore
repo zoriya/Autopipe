@@ -1,2 +1,5 @@
 .idea/
-venv/
+.venv/
+
+# Multiples python versions are targeted so the lock file must be ignored.
+Pipfile.lock
