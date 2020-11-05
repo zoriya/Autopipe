@@ -1,5 +1,6 @@
 .idea/
 .venv/
+__pycache__/
 
 # Multiples python versions are targeted so the lock file must be ignored.
 Pipfile.lock
