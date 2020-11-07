@@ -18,8 +18,9 @@ class Pipe(ABC):
 	def name(self):
 		raise NotImplementedError
 
+	@abstractmethod
 	def pipe(self, data: APData) -> APData:
-		pass
+		raise NotImplementedError
 
 
 class Input(ABC):
