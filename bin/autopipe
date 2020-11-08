@@ -1,1 +1,11 @@
-../autopipe/__main__.py
+#!/usr/bin/env python3
+try:
+	import autopipe
+except ModuleNotFoundError:
+	import sys
+	import os
+	sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), "..")))
+	import autopipe
+
+if __name__ == "__main__":
+	exit(autopipe.main())

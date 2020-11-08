@@ -33,14 +33,24 @@ class Input(ABC):
 		raise NotImplementedError
 
 	@abstractmethod
-	def generate(self) -> Generator[APData]:
+	def generate(self) -> Generator[APData, None, None]:
 		raise NotImplementedError
 
-	@abstractmethod
 	@property
+	@abstractmethod
 	def loop_cooldown(self) -> int:
 		"""
 		If negative or 0, the input can't be chained and once the generator return the program will exit.
 		If grater then 0, the generator will be called again after a sleep of x seconds where x is the return of this.
 		"""
+		raise NotImplementedError
+
+
+class Coordinator(ABC):
+	def __init__(self):
+		logging.info(f"Using coordinator: {self.name()}")
+
+	@classmethod
+	@abstractmethod
+	def name(cls):
 		raise NotImplementedError
