@@ -54,3 +54,9 @@ class Coordinator(ABC):
 	@abstractmethod
 	def name(cls):
 		raise NotImplementedError
+
+	@abstractmethod
+	def get_input(self):
+		raise NotImplementedError
+
+
