@@ -1,11 +1,45 @@
 import logging
-from autopipe import available_coordinators, ArgumentError
+import autopipe.coordinators as coordinators
+from typing import Callable, List, Union
+
+from autopipe import APData, Coordinator, ArgumentError
 
 
 class Autopipe:
 	def __init__(self, coordinator, coordinator_args, log_level=logging.WARNING):
 		logging.basicConfig(format="%(levelname)s: %(message)s", level=log_level)
-		coordinator_class = next((i for i in available_coordinators if i.name() == coordinator), None)
+		self.handlers = []
+
+		coordinator_class = self.get_coordinator(coordinator, coordinator_args)
 		if coordinator_class is None:
 			raise ArgumentError(f"Invalid coordinator: {coordinator}", "coordinator")
 		self.coordinator = coordinator_class(*coordinator_args)
+
+		for data in self.coordinator.get_input():
+			self._process_input(self.coordinator, data)
+
+	@staticmethod
+	def get_coordinator(coordinator: str, args: List[str]) -> Union[Callable, None]:
+		if coordinator == "-":
+			return None  # TODO support reading stdin as a coordinator file.
+		try:
+			return getattr(coordinators, coordinator)
+		except AttributeError:
+			try:
+				module = __import__(coordinator)
+				coordinator_class = getattr(module, args[0])
+				del args[0]
+				return coordinator_class
+			except Exception:
+				return None
+
+	def _process_input(self, coordinator: Coordinator, data: APData) -> APData:
+		logging.debug(data)
+		handler = next((x for x in self.handlers if x[1](data)), None)
+		if handler is None:
+			return coordinator.default_handler(data)
+		return handler(data)
+
+	def pipe_handler(self, f, selector: Callable[[APData], bool]):
+		self.handlers.append((f, selector))
+		return f

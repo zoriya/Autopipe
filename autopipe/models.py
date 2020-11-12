@@ -1,12 +1,16 @@
+import json
 from abc import ABC, abstractmethod
 from typing import Generator
 import logging
 
+from autopipe import ArgumentError
 
-class APData:
-	def __init__(self):
-		self.value = None
-		self.type = None
+
+class APData(ABC):
+	@property
+	@abstractmethod
+	def type(self):
+		raise NotImplementedError
 
 
 class Pipe(ABC):
@@ -59,4 +63,5 @@ class Coordinator(ABC):
 	def get_input(self):
 		raise NotImplementedError
 
-
+	def default_handler(self, data):
+		raise ArgumentError(f"No default argument handler for this coordinator. Data: {json.dumps(data)}")

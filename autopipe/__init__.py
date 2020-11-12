@@ -1,11 +1,10 @@
-__all__ = ["Autopipe", "main", "available_coordinators" 
+__all__ = ["Autopipe", "main",
            "Coordinator", "Pipe", "Input", "APData",
            "ArgumentError",
            "input", "output", "pipe", "coordinators"]
 
 from .exceptions import ArgumentError
 from .models import Coordinator, Pipe, Input, APData
-from .coordinators import *
 from .autopipe import Autopipe
 
 version = 1.0
@@ -32,7 +31,7 @@ def main(argv=None):
 		logging.error(str(e))
 		if e.flag == "coordinator":
 			logging.error("Available coordinators:")
-			for coordinator in available_coordinators:
+			for coordinator in coordinators.__all__:
 				logging.error(f" - {coordinator.name()}")
 		return 2
 	except Exception as ex:
