@@ -1,6 +1,5 @@
-import json
 from abc import ABC, abstractmethod
-from typing import Generator
+from typing import Generator, List, Union, Callable
 import logging
 
 from autopipe import ArgumentError
@@ -26,6 +25,9 @@ class Pipe(ABC):
 	def pipe(self, data: APData) -> APData:
 		raise NotImplementedError
 
+	def __call__(self, data: APData) -> APData:
+		return self.pipe(data)
+
 
 class Input(ABC):
 	def __init__(self):
@@ -49,6 +51,35 @@ class Input(ABC):
 		"""
 		raise NotImplementedError
 
+	def __iter__(self):
+		return self.generate()
+
+
+class Output(Pipe):
+	def __init__(self, pipe: Union[Pipe, Callable[[APData], APData], APData] = None):
+		super().__init__()
+		if callable(pipe):
+			self.pipe = pipe
+			self.output = None
+		else:
+			self.output = pipe
+			self.pipe = None
+
+	@property
+	def name(self):
+		if self.pipe is None:
+			if self.output:
+				return "Static output"
+			raise NotImplementedError
+		return self.pipe.name
+
+	def pipe(self, data: APData) -> APData:
+		if self.pipe is None:
+			if self.output:
+				return self.output
+			raise NotImplementedError
+		return self.pipe(data)
+
 
 class Coordinator(ABC):
 	def __init__(self):
@@ -60,8 +91,12 @@ class Coordinator(ABC):
 		raise NotImplementedError
 
 	@abstractmethod
-	def get_input(self):
+	def get_input(self) -> Input:
 		raise NotImplementedError
 
-	def default_handler(self, data):
-		raise ArgumentError(f"No default argument handler for this coordinator. Data: {json.dumps(data)}")
+	@property
+	def get_pipeline(self) -> List[Union[Pipe, Callable[..., APData]]]:
+		return []
+
+	def default_handler(self, data: APData) -> APData:
+		raise ArgumentError(f"No default argument handler for this coordinator, did you forget an Output() wrapper?")

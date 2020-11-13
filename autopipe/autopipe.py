@@ -1,50 +1,70 @@
 import logging
-import autopipe.coordinators as coordinators
-from typing import Callable, List, Union
+import time
 
-from autopipe import APData, Coordinator, ArgumentError
+import autopipe.coordinators as coordinators
+from typing import Callable, Union
+from autopipe import APData, Coordinator, ArgumentError, Output, Pipe
 
 
 class Autopipe:
 	def __init__(self, coordinator, coordinator_args, log_level=logging.WARNING):
 		logging.basicConfig(format="%(levelname)s: %(message)s", level=log_level)
-		self.handlers = []
+		self.interceptors = []
 
-		coordinator_class = self.get_coordinator(coordinator, coordinator_args)
+		coordinator_class = self.get_coordinator(coordinator)
 		if coordinator_class is None:
 			raise ArgumentError(f"Invalid coordinator: {coordinator}", "coordinator")
 		self.coordinator = coordinator_class(*coordinator_args)
+		self.pipeline = self.coordinator.get_pipeline()
 
-		for data in self.coordinator.get_input():
-			self._process_input(self.coordinator, data)
+		while True:
+			self.process_coordinator()
+			sleep_time = self.coordinator.get_input().loop_cooldown
+			if sleep_time <= 0:
+				logging.info("Input generator finished. Closing now.")
+				break
+			logging.info(f"Input generator finished. Starting again in {sleep_time} seconds.")
+			time.sleep(sleep_time)
 
 	@staticmethod
-	def get_coordinator(coordinator: str, args: List[str]) -> Union[Callable, None]:
+	def get_coordinator(coordinator: str) -> Union[Callable, None]:
 		if coordinator == "-":
 			return None  # TODO support reading stdin as a coordinator file.
 		try:
 			return getattr(coordinators, coordinator)
 		except AttributeError:
 			try:
-				module = __import__(coordinator)
-				coordinator_class = getattr(module, args[0])
-				del args[0]
-				return coordinator_class
+				mod, cls = coordinator.split(':')
+				module = __import__(mod)
+				return getattr(module, cls)
 			except Exception:
 				return None
 
-	def _process_input(self, coordinator: Coordinator, data: APData) -> APData:
-		logging.debug(data)
-		handler = next((x for x in self.handlers if x[1](data)), None)
-		if handler is None:
-			return coordinator.default_handler(data)
-		# TODO rename handler interceptors
-		# TODO use a pipe array as the base pipe selector
-		# TODO allow anonymous pipe (a function instead of a pipe in the array)
-		# TODO use the Output() class to end the pipeline, without this the default_handler is used for next items
-		# TODO change the default_handler error to ask if the Output() was forgotten
-		return handler(data)
+	def process_coordinator(self):
+		for data in self.coordinator.get_input():
+			step = 0
+			pipe = None
+			while pipe is None or not isinstance(pipe, Output):
+				pipe = self._process_input(self.coordinator, data, step)
+				data = pipe if isinstance(pipe, APData) else pipe.pipe(data)
+				step += 1
 
-	def pipe_handler(self, f, selector: Callable[[APData], bool]):
-		self.handlers.append((f, selector))
+	def _process_input(self, coordinator: Coordinator, data: APData, step: int) -> Union[APData, Pipe]:
+		logging.debug(data)
+
+		interceptor = next((x for x in self.interceptors if x[1](data)), None)
+		if interceptor:
+			logging.info(f"Using interceptor: {interceptor.__name__}")
+			return interceptor(data)
+
+		if len(self.pipeline) < step:
+			if isinstance(self.pipeline[step], Pipe):
+				return self.pipeline[step]
+			return self.pipeline[step](data)
+
+		logging.info(f"Using default handler.")
+		return coordinator.default_handler(data)
+
+	def interceptor(self, f, selector: Callable[[APData], bool]):
+		self.interceptors.append((f, selector))
 		return f

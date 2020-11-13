@@ -1,10 +1,12 @@
 __all__ = ["Autopipe", "main",
-           "Coordinator", "Pipe", "Input", "APData",
+           "Coordinator", "Pipe", "Input", "APData", "Output",
            "ArgumentError",
            "input", "output", "pipe", "coordinators"]
 
+from sys import stderr
+
 from .exceptions import ArgumentError
-from .models import Coordinator, Pipe, Input, APData
+from .models import Coordinator, Pipe, Input, APData, Output
 from .autopipe import Autopipe
 
 version = 1.0
@@ -28,11 +30,27 @@ def main(argv=None):
 		Autopipe(args.coordinator[0], args.coordinator[1:], log_level=getattr(logging, args.log_level.upper()))
 		return 0
 	except ArgumentError as e:
-		logging.error(str(e))
+		print(str(e), file=stderr)
 		if e.flag == "coordinator":
-			logging.error("Available coordinators:")
+			print("Available coordinators:", file=stderr)
 			for coordinator in coordinators.__all__:
-				logging.error(f" - {coordinator.name()}")
+				print(f"\t{coordinator.name()}", file=stderr)
+			if ':' in args.coordinator[0]:
+				try:
+					file, cls = args.coordinator[0].split(':')
+				except ValueError:
+					print(f"{args.coordinator[0]} is not a valid syntax. Did you meant to use file:class?", file=stderr)
+					return 2
+				print(f"Coordinators of ${file}:")
+				module = __import__(file)
+				for coordinator in module.__all__:
+					print(f"\t{coordinator.name()}", file=stderr)
+			else:
+				print("Or you can input a file anywhere on the system with the syntax: path/to/file.py:coordinator",
+				      file=stderr)
+		return 2
+	except KeyboardInterrupt:
+		print("Interrupted by user", file=stderr)
 		return 2
 	except Exception as ex:
 		logging.error(ex, exc_info=logging.getLogger().getEffectiveLevel() <= logging.INFO)
