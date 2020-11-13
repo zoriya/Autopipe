@@ -1,4 +1,4 @@
-from models import Pipe, APData
+from autopipe.models import Pipe, APData
 
 
 class TeePipe(Pipe):

@@ -1,5 +1,5 @@
 from typing import Callable
-from models import Pipe, APData
+from autopipe.models import Pipe, APData
 
 
 class FilterPipe(Pipe):
