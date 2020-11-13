@@ -38,6 +38,11 @@ class Autopipe:
 		handler = next((x for x in self.handlers if x[1](data)), None)
 		if handler is None:
 			return coordinator.default_handler(data)
+		# TODO rename handler interceptors
+		# TODO use a pipe array as the base pipe selector
+		# TODO allow anonymous pipe (a function instead of a pipe in the array)
+		# TODO use the Output() class to end the pipeline, without this the default_handler is used for next items
+		# TODO change the default_handler error to ask if the Output() was forgotten
 		return handler(data)
 
 	def pipe_handler(self, f, selector: Callable[[APData], bool]):
