@@ -35,7 +35,7 @@ class DownloadExample(Coordinator):
 ### For this coordinator to be found by autopipe, you must use one of the three following way
  1) Place your coordinator file into the `autopipe/coordinators` folders, import your coordinator in the `autopipe/coordinators/__init__.py` file and place your coordinator name in the `__all__` array of this file.
  2) Run autopipe with the coordinator argument set to the path of your file followed by ':' and the coordinator's class name. For example if your coordinator's file is named `coordinator.py`, is located in the current directory and your coordinator's name is `DownloadExample`, your coordinator argument would be `../coordinator.py:DownloadExample`
- 3) Send your coordinator file to the standard input of autopipe and use `-` as your coordinator name. **SOON*
+ 3) Send your coordinator file to the standard input of autopipe and use `-` as your coordinator name. **SOON**
 
 ### To run this, you have two ways
  1) Use the autopipe file in the bin folder like so: ``./autopipe <coordinator> [coordinator_parameters]``
