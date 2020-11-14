@@ -20,16 +20,20 @@ def main(argv=None):
 	from argparse import ArgumentParser
 
 	parser = ArgumentParser(description="Easily run advanced pipelines in a daemon or in one run sessions.")
-	parser.add_argument("coordinator", help="The name of your pipeline coordinator.", nargs="+", dest="coord")
+	parser.add_argument("coordinator", help="The name of your pipeline coordinator.", nargs="+")
 	parser.add_argument("-V", "--version", action="version", version=f"%(prog)s {version}")
 	parser.add_argument("-v", "--verbose", choices=["debug", "info", "warn", "error"], nargs="?", const="info",
 	                    default="warn", dest="log_level", metavar="loglevel",
 	                    help="Set the logging level.", type=str.lower)
+	parser.add_argument("-d", "--daemon", help="Enable the daemon mode (rerun input generators after a sleep cooldown",
+	                    action="store_true")
 	args = parser.parse_args(argv if argv is not None else sys.argv[1:])
 
 	try:
 		global autopipe
-		autopipe = Autopipe(args.coord[0], args.coord[1:], log_level=getattr(logging, args.log_level.upper()))
+		autopipe = Autopipe(args.coordinator[0], args.coordinator[1:],
+		                    log_level=getattr(logging, args.log_level.upper()),
+		                    daemon=args.daemon)
 		return 0
 	except ArgumentError as e:
 		print(str(e), file=stderr)

@@ -13,17 +13,14 @@ class APData(ABC):
 
 
 class Pipe(ABC):
-	def __init__(self):
-		logging.info(f"Entering pipe: {self.name}")
-
 	@property
 	@abstractmethod
 	def name(self):
 		raise NotImplementedError
 
-	@abstractmethod
 	def pipe(self, data: APData) -> APData:
-		raise NotImplementedError
+		logging.info(f"Entering pipe: {self.name}")
+		return data
 
 	def __call__(self, data: APData) -> APData:
 		return self.pipe(data)
@@ -57,7 +54,6 @@ class Input(ABC):
 
 class Output(Pipe):
 	def __init__(self, pipe: Union[Pipe, Callable[[APData], APData], APData] = None):
-		super().__init__()
 		if callable(pipe):
 			self.pipe = pipe
 			self.output = None
@@ -71,9 +67,10 @@ class Output(Pipe):
 			if self.output:
 				return "Static output"
 			raise NotImplementedError
-		return self.pipe.name
+		return self.pipe.name if isinstance(self.pipe, Pipe) else self.pipe.__name__
 
 	def pipe(self, data: APData) -> APData:
+		super().pipe(data)
 		if self.pipe is None:
 			if self.output:
 				return self.output

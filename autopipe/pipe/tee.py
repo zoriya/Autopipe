@@ -3,7 +3,6 @@ from autopipe.models import Pipe, APData
 
 class TeePipe(Pipe):
 	def __init__(self, *outputs):
-		super().__init__()
 		self.outputs = outputs
 
 	@property
@@ -11,6 +10,7 @@ class TeePipe(Pipe):
 		return "Tee"
 
 	def pipe(self, data: APData) -> APData:
+		super().pipe(data)
 		for output in self.outputs:
 			output.pipe(data)
 		return data

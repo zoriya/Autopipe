@@ -7,7 +7,9 @@ from autopipe import APData, Coordinator, ArgumentError, Output, Pipe
 
 
 class Autopipe:
-	def __init__(self, coordinator, coordinator_args, log_level=logging.WARNING):
+	def __init__(self, coordinator, coordinator_args,
+	             log_level=logging.WARNING,
+	             daemon=False):
 		logging.basicConfig(format="%(levelname)s: %(message)s", level=log_level)
 		self.interceptors = []
 
@@ -21,7 +23,7 @@ class Autopipe:
 		while True:
 			self.process_coordinator()
 			sleep_time = self.coordinator.get_input().loop_cooldown
-			if sleep_time <= 0:
+			if sleep_time <= 0 or not daemon:
 				logging.info("Input generator finished. Closing now.")
 				break
 			logging.info(f"Input generator finished. Starting again in {sleep_time} seconds.")
