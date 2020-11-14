@@ -55,3 +55,23 @@ You can add interceptors to your coordinator. An interceptor is a function that 
 
 ### The default handler
 A `default_handler` method can be specified in your coordinator. This special method will be called once the whole pipeline has been consumed but no Output has been returned. You can also use this method instead of the `pipeline` property by removing the property from your coordinator (or returning an empty list).
+
+## Usage
+```
+usage: autopipe [-h] [-V] [-v [loglevel]] [-d] coordinator [coordinator ...]
+
+Easily run advanced pipelines in a daemon or in one run sessions.
+
+positional arguments:
+  coordinator           The name of your pipeline coordinator.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -V, --version         show program's version number and exit
+  -v [loglevel], --verbose [loglevel]
+                        Set the logging level.
+  -d, --daemon          Enable the daemon mode (rerun input generators after a sleep cooldown)
+```
+
+## Instalation
+For now, no pip package exist for this project. Simply clone the project and run ``pipenv install`` (you will need pipenv for that: ``sudo pip install pipenv``).
