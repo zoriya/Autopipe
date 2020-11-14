@@ -19,7 +19,7 @@ class DownloadExample(Coordinator):
 
 	@classmethod
 	def name(cls):
-		return "NotifyExample"
+		return "DownloadExample"
 
 	@property
 	def pipeline(self) -> List[Union[Pipe, Callable[..., APData]]]:
