@@ -10,6 +10,7 @@ from .models import Coordinator, Pipe, Input, APData, Output
 from .autopipe import Autopipe
 
 version = 1.0
+autopipe: Autopipe
 
 
 def main(argv=None):
@@ -19,7 +20,7 @@ def main(argv=None):
 	from argparse import ArgumentParser
 
 	parser = ArgumentParser(description="Easily run advanced pipelines in a daemon or in one run sessions.")
-	parser.add_argument("coordinator", help="The name of your pipeline coordinator.", nargs="+")
+	parser.add_argument("coordinator", help="The name of your pipeline coordinator.", nargs="+", dest="coord")
 	parser.add_argument("-V", "--version", action="version", version=f"%(prog)s {version}")
 	parser.add_argument("-v", "--verbose", choices=["debug", "info", "warn", "error"], nargs="?", const="info",
 	                    default="warn", dest="log_level", metavar="loglevel",
@@ -27,7 +28,8 @@ def main(argv=None):
 	args = parser.parse_args(argv if argv is not None else sys.argv[1:])
 
 	try:
-		Autopipe(args.coordinator[0], args.coordinator[1:], log_level=getattr(logging, args.log_level.upper()))
+		global autopipe
+		autopipe = Autopipe(args.coord[0], args.coord[1:], log_level=getattr(logging, args.log_level.upper()))
 		return 0
 	except ArgumentError as e:
 		print(str(e), file=stderr)

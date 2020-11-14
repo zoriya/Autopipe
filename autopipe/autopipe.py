@@ -15,8 +15,9 @@ class Autopipe:
 		if coordinator_class is None:
 			raise ArgumentError(f"Invalid coordinator: {coordinator}", "coordinator")
 		self.coordinator = coordinator_class(*coordinator_args)
-		self.pipeline = self.coordinator.get_pipeline()
+		self.pipeline = self.coordinator.pipeline
 
+		self.step = 0
 		while True:
 			self.process_coordinator()
 			sleep_time = self.coordinator.get_input().loop_cooldown
@@ -42,14 +43,13 @@ class Autopipe:
 
 	def process_coordinator(self):
 		for data in self.coordinator.get_input():
-			step = 0
+			self.step = 0
 			pipe = None
 			while pipe is None or not isinstance(pipe, Output):
-				pipe = self._process_input(self.coordinator, data, step)
+				pipe = self._process_input(self.coordinator, data)
 				data = pipe if isinstance(pipe, APData) else pipe.pipe(data)
-				step += 1
 
-	def _process_input(self, coordinator: Coordinator, data: APData, step: int) -> Union[APData, Pipe]:
+	def _process_input(self, coordinator: Coordinator, data: APData) -> Union[APData, Pipe]:
 		logging.debug(data)
 
 		interceptor = next((x for x in self.interceptors if x[1](data)), None)
@@ -57,10 +57,11 @@ class Autopipe:
 			logging.info(f"Using interceptor: {interceptor.__name__}")
 			return interceptor(data)
 
-		if len(self.pipeline) < step:
-			if isinstance(self.pipeline[step], Pipe):
-				return self.pipeline[step]
-			return self.pipeline[step](data)
+		if len(self.pipeline) < self.step:
+			self.step += 1
+			if isinstance(self.pipeline[self.step], Pipe):
+				return self.pipeline[self.step]
+			return self.pipeline[self.step](data)
 
 		logging.info(f"Using default handler.")
 		return coordinator.default_handler(data)

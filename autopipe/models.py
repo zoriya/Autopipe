@@ -95,8 +95,8 @@ class Coordinator(ABC):
 		raise NotImplementedError
 
 	@property
-	def get_pipeline(self) -> List[Union[Pipe, Callable[..., APData]]]:
+	def pipeline(self) -> List[Union[Pipe, Callable[[APData], Union[APData, Pipe]]]]:
 		return []
 
-	def default_handler(self, data: APData) -> APData:
+	def default_handler(self, data: APData) -> Union[Pipe, Callable[[APData], Union[APData, Pipe]]]:
 		raise ArgumentError(f"No default argument handler for this coordinator, did you forget an Output() wrapper?")

@@ -1,6 +1,6 @@
-from .notify_example import NotifyExample
+from .download_example import DownloadExample
 
-__all__ = [NotifyExample]
+__all__ = [DownloadExample]
 
 
 def __getattr__(name):
