@@ -22,7 +22,7 @@ class DownloadExample(Coordinator):
 		return "DownloadExample"
 
 	@property
-	def pipeline(self) -> List[Union[Pipe, Callable[..., APData]]]:
+	def pipeline(self) -> List[Union[Pipe, Callable[[APData], Union[APData, Pipe]]]]:
 		return [Output(DownloaderPipe())]
 
 	def get_input(self):
