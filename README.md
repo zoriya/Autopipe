@@ -22,13 +22,13 @@ class DownloadExample(Coordinator):
 		return "DownloadExample"
 
 	@property
+	def input(self):
+		return RssInput(f"http://www.obsrv.com/General/ImageFeed.aspx?{self.query}",
+		                lambda x: FileData(x.title, x["media_content"][0]["url"], False))
+
+	@property
 	def pipeline(self) -> List[Union[Pipe, Callable[[APData], Union[APData, Pipe]]]]:
 		return [Output(DownloaderPipe())]
-
-	def get_input(self):
-		return RssInput(f"http://www.obsrv.com/General/ImageFeed.aspx?{self.query}",
-		                lambda x: FileData(x.title, x["media:content"], True))
-
 
 ```
 
