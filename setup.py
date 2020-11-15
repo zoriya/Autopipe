@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="autopipe-AnonymusRaccoon",
+    name="autopipe",
     version="0.0.1",
     author="Tristan Roux",
     author_email="tr.tristan-roux@outlook.fr",
@@ -12,7 +12,9 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/AnonymusRaccoon/Autopipe",
+    scripts=["./bin/autopipe"],
     packages=setuptools.find_packages(),
+    install_requires=["requests", "feedparser"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
