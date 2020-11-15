@@ -24,7 +24,7 @@ class DownloadExample(Coordinator):
 	@property
 	def input(self):
 		return RssInput(f"http://www.obsrv.com/General/ImageFeed.aspx?{self.query}",
-		                lambda x: FileData(x.title, x["media_content"][0]["url"], False))
+		                lambda x: FileData(None, x["media_content"][0]["url"], False))
 
 	@property
 	def pipeline(self) -> List[Union[Pipe, Callable[[APData], Union[APData, Pipe]]]]:
@@ -59,7 +59,7 @@ A `default_handler` method can be specified in your coordinator. This special me
 
 ## Usage
 ```
-usage: autopipe [-h] [-V] [-v [lvl]] [-d] coordinator [coordinator ...]
+usage: autopipe [-h] [-V] [-v [lvl]] [-d] [-w dir] coordinator [coordinator ...]
 
 Easily run advanced pipelines in a daemon or in one run sessions.
 
@@ -71,7 +71,8 @@ optional arguments:
   -V, --version        show program's version number and exit
   -v, --verbose [lvl]  Set the logging level. (default: warn ; available: trace, debug, info, warning, error)
   -d, --daemon         Enable the daemon mode (rerun input generators after a sleep cooldown)
+  -w, --workdir dir    Change the workdir, default is the pwd.
 ```
 
 ## Instalation
-For now, no pip package exist for this project. Simply clone the project and run ``pipenv install`` (you will need pipenv for that: ``sudo pip install pipenv``).
+To install autopipe, run ``sudo pip install autopipe``. To use a developement version, you can clone this project and run ``pip install -e .``.
