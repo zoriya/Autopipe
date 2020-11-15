@@ -2,8 +2,6 @@ from abc import ABC, abstractmethod
 from typing import Generator, List, Union, Callable
 import logging
 
-from autopipe import ArgumentError
-
 
 class APData(ABC):
 	@property

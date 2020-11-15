@@ -1,10 +1,9 @@
 __all__ = ["Autopipe", "main",
-           "Coordinator", "Pipe", "Input", "APData", "Output",
+           "LogLevel", "Coordinator", "Pipe", "Input", "APData", "Output",
            "ArgumentError",
            "input", "output", "pipe", "coordinators"]
 
-from sys import stderr
-
+from .logging import LogLevel
 from .exceptions import ArgumentError
 from .models import Coordinator, Pipe, Input, APData, Output
 from .autopipe import Autopipe
@@ -13,47 +12,46 @@ version = 1.0
 autopipe: Autopipe
 
 
-def main(argv=None):
-	import sys
-	from autopipe import Autopipe, ArgumentError, coordinators
-	import logging
-	from argparse import ArgumentParser
+def _parse_args(argv=None):
+	from sys import argv as sysargv
+	from argparse import ArgumentParser, HelpFormatter
 
-	parser = ArgumentParser(description="Easily run advanced pipelines in a daemon or in one run sessions.")
+	class CustomHelpFormatter(HelpFormatter):
+		# noinspection PyProtectedMember
+		def _format_action_invocation(self, action):
+			if not action.option_strings or action.nargs == 0:
+				return super()._format_action_invocation(action)
+			default = self._get_default_metavar_for_optional(action)
+			args_string = self._format_args(action, default)
+			return ', '.join(action.option_strings) + ' ' + args_string
+
+	# noinspection PyTypeChecker
+	parser = ArgumentParser(description="Easily run advanced pipelines in a daemon or in one run sessions.",
+	                        formatter_class=CustomHelpFormatter)
 	parser.add_argument("coordinator", help="The name of your pipeline coordinator.", nargs="+")
 	parser.add_argument("-V", "--version", action="version", version=f"%(prog)s {version}")
-	parser.add_argument("-v", "--verbose", choices=["debug", "info", "warn", "error"], nargs="?", const="info",
-	                    default="warn", dest="log_level", metavar="loglevel",
-	                    help="Set the logging level.", type=str.lower)
-	parser.add_argument("-d", "--daemon", help="Enable the daemon mode (rerun input generators after a sleep cooldown",
+	parser.add_argument("-v", "--verbose", choices=list(LogLevel), nargs="?",
+	                    const="info", default="warn", dest="level", metavar="lvl",
+	                    help="Set the logging level. (default: warn ; available: %(choices)s)", type=LogLevel.parse)
+	parser.add_argument("-d", "--daemon", help="Enable the daemon mode (rerun input generators after a sleep cooldown)",
 	                    action="store_true")
-	args = parser.parse_args(argv if argv is not None else sys.argv[1:])
+	return parser.parse_args(argv if argv is not None else sysargv[1:])
 
+
+def main(argv=None):
+	from sys import stderr
+	from autopipe import Autopipe, ArgumentError, coordinators
+	import logging
+
+	args = _parse_args(argv)
 	try:
 		global autopipe
-		autopipe = Autopipe(args.coordinator[0], args.coordinator[1:],
-		                    log_level=getattr(logging, args.log_level.upper()),
-		                    daemon=args.daemon)
+		autopipe = Autopipe(args.coordinator[0], args.coordinator[1:], log_level=args.level, daemon=args.daemon)
 		return 0
 	except ArgumentError as e:
 		print(str(e), file=stderr)
-		if e.flag == "coordinator":
-			print("Available coordinators:", file=stderr)
-			for coordinator in coordinators.__all__:
-				print(f"\t{coordinator.name()}", file=stderr)
-			if ':' in args.coordinator[0]:
-				try:
-					file, cls = args.coordinator[0].split(':')
-				except ValueError:
-					print(f"{args.coordinator[0]} is not a valid syntax. Did you meant to use file:class?", file=stderr)
-					return 2
-				print(f"Coordinators of ${file}:")
-				module = __import__(file)
-				for coordinator in module.__all__:
-					print(f"\t{coordinator.name()}", file=stderr)
-			else:
-				print("Or you can input a file anywhere on the system with the syntax: path/to/file.py:coordinator",
-				      file=stderr)
+		if e.flag is not None:
+			e.print_more(args)
 		return 2
 	except KeyboardInterrupt:
 		print("Interrupted by user", file=stderr)

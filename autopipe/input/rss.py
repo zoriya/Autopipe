@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import datetime
 from typing import Generator, Callable, List
@@ -18,10 +19,13 @@ class RssInput(Input):
 		return "Rss"
 
 	def generate(self) -> Generator[APData, None, None]:
+		setattr(logging, "trace", lambda msg, *args, **kwargs: True)
+
 		logging.debug(f"Pulling the rss feed at {self.url}, last etag: {self.last_etag}, modif: {self.last_modified}")
 		feed = feedparser.parse(self.url, etag=self.last_etag, modified=self.last_modified)
 		if feed.status != 304:
 			for entry in feed.entries:
+				logging.trace(f"Rss entry: {json.dumps(entry, indent=4)}")
 				yield self.mapper(entry)
 
 	@property

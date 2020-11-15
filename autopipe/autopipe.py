@@ -1,16 +1,17 @@
+import json
 import logging
 import time
 
 import autopipe.coordinators as coordinators
-from typing import Callable, Union
-from autopipe import APData, Coordinator, ArgumentError, Output, Pipe
+from typing import Callable, Union, List
+from autopipe import APData, Coordinator, ArgumentError, Output, Pipe, LogLevel
 
 
 class Autopipe:
-	def __init__(self, coordinator, coordinator_args,
-	             log_level=logging.WARNING,
-	             daemon=False):
-		logging.basicConfig(format="%(levelname)s: %(message)s", level=log_level)
+	def __init__(self, coordinator: str, coordinator_args: List[str],
+	             log_level: LogLevel = LogLevel.WARN,
+	             daemon: bool = False):
+		logging.basicConfig(format="%(levelname)s: %(message)s", level=log_level.value)
 		self.interceptors = []
 
 		coordinator_class = self.get_coordinator(coordinator)
@@ -52,7 +53,7 @@ class Autopipe:
 				data = pipe if isinstance(pipe, APData) else pipe.pipe(data)
 
 	def _process_input(self, coordinator: Coordinator, data: APData) -> Union[APData, Pipe]:
-		logging.debug(data)
+		logging.debug(f"Data: {json.dumps(data, indent=4)}")
 
 		interceptor = next((x for x in self.interceptors if x[1](data)), None)
 		if interceptor:
