@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Generator, List, Union, Callable
+from autopipe import ArgumentError
 import logging
 
 

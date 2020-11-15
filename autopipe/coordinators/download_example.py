@@ -19,4 +19,4 @@ class DownloadExample(Coordinator):
 
 	def get_input(self):
 		return RssInput(f"http://www.obsrv.com/General/ImageFeed.aspx?{self.query}",
-		                lambda x: FileData(x.title, x["media_content"]["url"], True))
+		                lambda x: FileData(x.title, x["media_content"][0]["url"], True))

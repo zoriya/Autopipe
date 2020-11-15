@@ -2,9 +2,9 @@ import json
 import logging
 import time
 
-import autopipe.coordinators as coordinators
 from typing import Callable, Union, List
 from autopipe import APData, Coordinator, ArgumentError, Output, Pipe, LogLevel
+from .utils import to_dict
 
 
 class Autopipe:
@@ -35,6 +35,7 @@ class Autopipe:
 		if coordinator == "-":
 			return None  # TODO support reading stdin as a coordinator file.
 		try:
+			import autopipe.coordinators as coordinators
 			return getattr(coordinators, coordinator)
 		except AttributeError:
 			try:
@@ -53,7 +54,7 @@ class Autopipe:
 				data = pipe if isinstance(pipe, APData) else pipe.pipe(data)
 
 	def _process_input(self, coordinator: Coordinator, data: APData) -> Union[APData, Pipe]:
-		logging.debug(f"Data: {json.dumps(data, indent=4)}")
+		logging.debug(f"Data: {json.dumps(to_dict(data), indent=4)}")
 
 		interceptor = next((x for x in self.interceptors if x[1](data)), None)
 		if interceptor:
