@@ -19,10 +19,10 @@ class DownloadExample(Coordinator):
 
 	@classmethod
 	def name(cls):
-		return "NotifyExample"
+		return "DownloadExample"
 
 	@property
-	def pipeline(self) -> List[Union[Pipe, Callable[..., APData]]]:
+	def pipeline(self) -> List[Union[Pipe, Callable[[APData], Union[APData, Pipe]]]]:
 		return [Output(DownloaderPipe())]
 
 	def get_input(self):
@@ -35,7 +35,7 @@ class DownloadExample(Coordinator):
 ### For this coordinator to be found by autopipe, you must use one of the three following way
  1) Place your coordinator file into the `autopipe/coordinators` folders, import your coordinator in the `autopipe/coordinators/__init__.py` file and place your coordinator name in the `__all__` array of this file.
  2) Run autopipe with the coordinator argument set to the path of your file followed by ':' and the coordinator's class name. For example if your coordinator's file is named `coordinator.py`, is located in the current directory and your coordinator's name is `DownloadExample`, your coordinator argument would be `../coordinator.py:DownloadExample`
- 3) Send your coordinator file to the standard input of autopipe and use `-` as your coordinator name. **SOON*
+ 3) Send your coordinator file to the standard input of autopipe and use `-` as your coordinator name. **SOON**
 
 ### To run this, you have two ways
  1) Use the autopipe file in the bin folder like so: ``./autopipe <coordinator> [coordinator_parameters]``
@@ -55,3 +55,23 @@ You can add interceptors to your coordinator. An interceptor is a function that 
 
 ### The default handler
 A `default_handler` method can be specified in your coordinator. This special method will be called once the whole pipeline has been consumed but no Output has been returned. You can also use this method instead of the `pipeline` property by removing the property from your coordinator (or returning an empty list).
+
+## Usage
+```
+usage: autopipe [-h] [-V] [-v [loglevel]] [-d] coordinator [coordinator ...]
+
+Easily run advanced pipelines in a daemon or in one run sessions.
+
+positional arguments:
+  coordinator           The name of your pipeline coordinator.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -V, --version         show program's version number and exit
+  -v [loglevel], --verbose [loglevel]
+                        Set the logging level.
+  -d, --daemon          Enable the daemon mode (rerun input generators after a sleep cooldown)
+```
+
+## Instalation
+For now, no pip package exist for this project. Simply clone the project and run ``pipenv install`` (you will need pipenv for that: ``sudo pip install pipenv``).
