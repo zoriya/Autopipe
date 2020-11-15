@@ -15,6 +15,7 @@ autopipe: Autopipe
 def _parse_args(argv=None):
 	from sys import argv as sysargv
 	from argparse import ArgumentParser, HelpFormatter
+	import os
 
 	class CustomHelpFormatter(HelpFormatter):
 		# noinspection PyProtectedMember
@@ -24,6 +25,11 @@ def _parse_args(argv=None):
 			default = self._get_default_metavar_for_optional(action)
 			args_string = self._format_args(action, default)
 			return ', '.join(action.option_strings) + ' ' + args_string
+
+	def dir_path(path):
+		if os.path.isdir(path):
+			return path
+		raise NotADirectoryError
 
 	# noinspection PyTypeChecker
 	parser = ArgumentParser(description="Easily run advanced pipelines in a daemon or in one run sessions.",
@@ -35,7 +41,12 @@ def _parse_args(argv=None):
 	                    help="Set the logging level. (default: warn ; available: %(choices)s)", type=LogLevel.parse)
 	parser.add_argument("-d", "--daemon", help="Enable the daemon mode (rerun input generators after a sleep cooldown)",
 	                    action="store_true")
-	return parser.parse_args(argv if argv is not None else sysargv[1:])
+	parser.add_argument("-w", "--workdir", help="Change the workdir, default is the pwd.", type=dir_path, metavar="dir")
+
+	args = parser.parse_args(argv if argv is not None else sysargv[1:])
+	if args.workdir is not None:
+		os.chdir(args.workdir)
+	return args
 
 
 def main(argv=None):
