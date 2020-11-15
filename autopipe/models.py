@@ -26,9 +26,6 @@ class Pipe(ABC):
 
 
 class Input(ABC):
-	def __init__(self):
-		logging.info(f"Starting input manager: {self.name}")
-
 	@property
 	@abstractmethod
 	def name(self):
@@ -86,8 +83,9 @@ class Coordinator(ABC):
 	def name(cls):
 		raise NotImplementedError
 
+	@property
 	@abstractmethod
-	def get_input(self) -> Input:
+	def input(self) -> Input:
 		raise NotImplementedError
 
 	@property

@@ -8,7 +8,6 @@ import feedparser
 
 class RssInput(Input):
 	def __init__(self, url: str, mapper: Callable[[List], APData], start_from_now: bool = True):
-		super().__init__()
 		self.url = url
 		self.mapper = mapper
 		self.last_etag = None

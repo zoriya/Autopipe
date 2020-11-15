@@ -1,5 +1,6 @@
 import json
 import logging
+import shutil
 import time
 
 from typing import Callable, Union, List
@@ -23,7 +24,7 @@ class Autopipe:
 		self.step = 0
 		while True:
 			self.process_coordinator()
-			sleep_time = self.coordinator.get_input().loop_cooldown
+			sleep_time = self.coordinator.input.loop_cooldown
 			if sleep_time <= 0 or not daemon:
 				logging.info("Input generator finished. Closing now.")
 				break
@@ -46,12 +47,17 @@ class Autopipe:
 				return None
 
 	def process_coordinator(self):
-		for data in self.coordinator.get_input():
+		logging.info(f"Starting input manager: {self.coordinator.input.name}")
+		for data in self.coordinator.input:
 			self.step = 0
 			pipe = None
 			while pipe is None or not isinstance(pipe, Output):
 				pipe = self._process_input(self.coordinator, data)
 				data = pipe if isinstance(pipe, APData) else pipe.pipe(data)
+			logging.info("Pipeline finished")
+			if data is not None:
+				logging.debug(f"Output data (discarded): {json.dumps(to_dict(data), indent=4)}")
+			logging.separator()
 
 	def _process_input(self, coordinator: Coordinator, data: APData) -> Union[APData, Pipe]:
 		logging.debug(f"Data: {json.dumps(to_dict(data), indent=4)}")
@@ -61,11 +67,12 @@ class Autopipe:
 			logging.info(f"Using interceptor: {interceptor.__name__}")
 			return interceptor(data)
 
-		if len(self.pipeline) < self.step:
+		if len(self.pipeline) > self.step:
+			pipe = self.pipeline[self.step]
 			self.step += 1
-			if isinstance(self.pipeline[self.step], Pipe):
-				return self.pipeline[self.step]
-			return self.pipeline[self.step](data)
+			if isinstance(pipe, Pipe):
+				return pipe
+			return pipe(data)
 
 		logging.info(f"Using default handler.")
 		return coordinator.default_handler(data)
