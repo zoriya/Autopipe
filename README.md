@@ -58,19 +58,18 @@ A `default_handler` method can be specified in your coordinator. This special me
 
 ## Usage
 ```
-usage: autopipe [-h] [-V] [-v [loglevel]] [-d] coordinator [coordinator ...]
+usage: autopipe [-h] [-V] [-v [lvl]] [-d] coordinator [coordinator ...]
 
 Easily run advanced pipelines in a daemon or in one run sessions.
 
 positional arguments:
-  coordinator           The name of your pipeline coordinator.
+  coordinator          The name of your pipeline coordinator.
 
 optional arguments:
-  -h, --help            show this help message and exit
-  -V, --version         show program's version number and exit
-  -v [loglevel], --verbose [loglevel]
-                        Set the logging level.
-  -d, --daemon          Enable the daemon mode (rerun input generators after a sleep cooldown)
+  -h, --help           show this help message and exit
+  -V, --version        show program's version number and exit
+  -v, --verbose [lvl]  Set the logging level. (default: warn ; available: trace, debug, info, warning, error)
+  -d, --daemon         Enable the daemon mode (rerun input generators after a sleep cooldown)
 ```
 
 ## Instalation
