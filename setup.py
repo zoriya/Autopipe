@@ -5,9 +5,9 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="autopipe",
-    version="0.0.1",
-    author="Tristan Roux",
-    author_email="tr.tristan-roux@outlook.fr",
+    version="0.0.3",
+    author="Zoe Roux",
+    author_email="zoe.roux@sdg.moe",
     description="A tool that allow one to create pipeline of automatic data processing.",
     long_description=long_description,
     long_description_content_type="text/markdown",
